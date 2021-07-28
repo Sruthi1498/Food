@@ -1,6 +1,6 @@
 package com.example.foodly.activity
 
-import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
@@ -15,12 +15,14 @@ import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
-import com.bumptech.glide.Glide
 import com.example.foodly.R
 import com.example.foodly.adapter.RestaurantMenuAdapter
+import com.example.foodly.fragment.FavoriteFragment
 import com.example.foodly.model.RestaurantMenu
-import com.example.foodly.util.ConnectionManager
+import com.example.foodly.util.ConnectionManager.Companion.checkConnectivity
+import com.example.foodly.util.Constants
 import com.squareup.picasso.Picasso
+
 
 class RestaurantMenuActivity : AppCompatActivity() {
 
@@ -64,9 +66,9 @@ class RestaurantMenuActivity : AppCompatActivity() {
     fun fetchData() {
 
         val queue = Volley.newRequestQueue(this)
-        val url = "http://13.235.250.119/v2/restaurants/fetch_result/$restaurantId"
+        val url = Constants.url.rest_URL+restaurantId
 
-        if (ConnectionManager().checkConnectivity(this)) {
+        if (checkConnectivity(this)) {
 
             menuProgress.visibility = View.INVISIBLE
             val jsonObjectRequest =
@@ -88,6 +90,9 @@ class RestaurantMenuActivity : AppCompatActivity() {
                                 )
 
                                 restaurantMenuList.add(menuObject)
+                                val intent = Intent(this@RestaurantMenuActivity, FavoriteFragment::class.java)
+                                intent.putExtra("QuestionListExtra",
+                                    restaurantMenuList )
                                 menuAdapter = RestaurantMenuAdapter(
                                     this,
                                     restaurantId,
@@ -104,7 +109,7 @@ class RestaurantMenuActivity : AppCompatActivity() {
                             }
 
                         } else {
-                            Toast.makeText(this, "Some Error", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "Failed to connect to server!!!", Toast.LENGTH_SHORT).show()
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -117,8 +122,8 @@ class RestaurantMenuActivity : AppCompatActivity() {
                 }) {
                     override fun getHeaders(): MutableMap<String, String> {
                         val headers = HashMap<String, String>()
-                        headers["Content-type"] = "application/json"
-                        headers["token"] = "9bf534118365f1"
+                        headers["Content-type"] = Constants.url.json
+                        headers["token"] = Constants.url.key
                         return headers
                     }
 
@@ -127,7 +132,7 @@ class RestaurantMenuActivity : AppCompatActivity() {
             queue.add(jsonObjectRequest)
 
         } else {
-            Toast.makeText(this, " Error", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Try again later!!!", Toast.LENGTH_SHORT).show()
         }
 
 

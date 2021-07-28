@@ -16,7 +16,8 @@ import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.foodly.R
-import com.example.foodly.util.ConnectionManager
+import com.example.foodly.util.ConnectionManager.Companion.checkConnectivity
+import com.example.foodly.util.Constants
 import org.json.JSONObject
 
 class RegisterActivity : AppCompatActivity() {
@@ -46,10 +47,11 @@ class RegisterActivity : AppCompatActivity() {
         submitBtn = findViewById(R.id.sign_up_button)
 
         submitBtn.setOnClickListener {
+            val editor = sharedPreferences.edit()
             sharedPreferences.edit().putBoolean("isLoggedIn", false).apply()
 
             if (checkErrors()) {
-                if (ConnectionManager().checkConnectivity(this)) {
+                if (checkConnectivity(this)) {
 
                     try {
                         val regUser = JSONObject()
@@ -61,7 +63,7 @@ class RegisterActivity : AppCompatActivity() {
 
 
                         val queue = Volley.newRequestQueue(this)
-                        val url = "http://13.235.250.119/v2/register/fetch_result/"
+                        val url = Constants.url.registerURL
 
                         val jsonRequest = object :
                             JsonObjectRequest(Request.Method.POST, url, regUser, Response.Listener {
@@ -71,21 +73,22 @@ class RegisterActivity : AppCompatActivity() {
 
                                 if (success) {
                                     val data = response.getJSONObject("data")
-                                    sharedPreferences.edit().putBoolean("isLoggedIn", true).apply()
-                                    sharedPreferences.edit()
-                                        .putString("user_id", data.getString("user_id")).apply()
-                                    sharedPreferences.edit()
-                                        .putString("name", data.getString("name")).apply()
-                                    sharedPreferences.edit()
-                                        .putString("email", data.getString("email")).apply()
-                                    sharedPreferences.edit()
+                                    editor.putBoolean("isLoggedIn", true)
+                                    editor
+                                        .putString("user_id", data.getString("user_id"))
+                                    editor
+                                        .putString("name", data.getString("name"))
+                                    editor
+                                        .putString("email", data.getString("email"))
+                                    editor
                                         .putString(
                                             "mobile_number",
                                             data.getString("mobile_number")
                                         )
-                                        .apply()
-                                    sharedPreferences.edit()
-                                        .putString("address", data.getString("address")).apply()
+
+                                    editor
+                                        .putString("address", data.getString("address"))
+                                    editor.apply()
 
                                     Toast.makeText(
                                         this,
@@ -106,12 +109,12 @@ class RegisterActivity : AppCompatActivity() {
 
                             },
                                 Response.ErrorListener {
-                                    Toast.makeText(this, "$it Error", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(this, "User not registered. Please try again!!!", Toast.LENGTH_SHORT).show()
                                 }) {
                             override fun getHeaders(): MutableMap<String, String> {
                                 val headers = HashMap<String, String>()
-                                headers["Content-type"] = "application/json"
-                                headers["token"] = "9bf534118365f1"
+                                headers["Content-type"] = Constants.url.json
+                                headers["token"] = Constants.url.key
                                 return headers
                             }
                         }
@@ -139,7 +142,7 @@ class RegisterActivity : AppCompatActivity() {
                     dialog.show()
                 }
             } else {
-                Toast.makeText(this, "Some Error Occurred , Please Try Again ", Toast.LENGTH_SHORT)
+                Toast.makeText(this, "User not registered , Please Try Again ", Toast.LENGTH_SHORT)
                     .show()
             }
         }
@@ -190,7 +193,7 @@ class RegisterActivity : AppCompatActivity() {
         }
 
         if (etPassword.text.isNotBlank() || etConfirmPassword.text.isNotBlank()) {
-            if (etPassword.text.toString().toInt() == etConfirmPassword.text.toString().toInt()) {
+            if (etPassword.text.toString() == etConfirmPassword.text.toString()) {
                 noError++
             } else {
                 etConfirmPassword.error = "Password's Do not Match"

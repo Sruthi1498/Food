@@ -14,7 +14,8 @@ import com.android.volley.toolbox.Volley
 import com.example.foodly.R
 import com.example.foodly.model.CartItems
 import com.example.foodly.model.OrderHistoryRestaurant
-import com.example.foodly.util.ConnectionManager
+import com.example.foodly.util.ConnectionManager.Companion.checkConnectivity
+import com.example.foodly.util.Constants
 import org.json.JSONException
 
 class OrderHistoryAdapter(
@@ -55,7 +56,7 @@ class OrderHistoryAdapter(
         val layoutManager = LinearLayoutManager(context)
         var orderedItemAdapter: CartAdapter
 
-        if (ConnectionManager().checkConnectivity(context)) {
+        if (checkConnectivity(context)) {
 
             try {
                 val orderItemsPerRestaurant = ArrayList<CartItems>()
@@ -66,7 +67,7 @@ class OrderHistoryAdapter(
 
                 val userId = sharedPreferences.getString("user_id", "0")
                 val queue = Volley.newRequestQueue(context)
-                val url = "http://13.235.250.119/v2/orders/fetch_result/$userId"
+                val url = Constants.url.orderUrL+userId
 
                 val jsonObjectRequest = object : JsonObjectRequest(
                     Method.GET,
@@ -102,17 +103,16 @@ class OrderHistoryAdapter(
                     },
                     Response.ErrorListener {
                         println("Error12menu is $it")
-
                         Toast.makeText(
                             context,
-                            "Some Error occurred!!!",
+                            "Failed to connect to server!!!",
                             Toast.LENGTH_SHORT
                         ).show()
                     }) {
                     override fun getHeaders(): MutableMap<String, String> {
                         val headers = HashMap<String, String>()
-                        headers["Content-type"] = "application/json"
-                        headers["token"] = "26c5144c5b9c13"
+                        headers["Content-type"] =Constants.url.json
+                        headers["token"] = Constants.url.key
                         return headers
                     }
                 }
@@ -122,9 +122,12 @@ class OrderHistoryAdapter(
             } catch (e: JSONException) {
                 Toast.makeText(
                     context,
-                    "Some Unexpected error occurred!!!",
+                    "Failed to connect to server!!!",
                     Toast.LENGTH_SHORT
                 ).show()
+            }
+            catch (exception: Exception){
+                exception.stackTrace
             }
         }
     }

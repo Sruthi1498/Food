@@ -18,7 +18,10 @@ import com.example.foodly.R
 import com.example.foodly.adapter.OrderHistoryAdapter
 import com.example.foodly.model.OrderHistoryRestaurant
 import com.example.foodly.util.ConnectionManager
+import com.example.foodly.util.ConnectionManager.Companion.checkConnectivity
+import com.example.foodly.util.Constants
 import org.json.JSONException
+import java.lang.Exception
 
 class OrderHistoryActivity : AppCompatActivity() {
 
@@ -52,14 +55,14 @@ class OrderHistoryActivity : AppCompatActivity() {
         )
 
         val userId = sharedPreferences.getString("user_id", "000")
-        if (ConnectionManager().checkConnectivity(this)) {
+        if (checkConnectivity(this)) {
 
             orderHistoryLayout.visibility = View.VISIBLE
 
             try {
                 val queue = Volley.newRequestQueue(this)
                 val url =
-                    "http://13.235.250.119/v2/orders/fetch_result/$userId"
+                    Constants.url.orderUrL+userId
                 val jsonObjectRequest = object : JsonObjectRequest(
                     Method.GET,
                     url,
@@ -107,14 +110,14 @@ class OrderHistoryActivity : AppCompatActivity() {
 
                         Toast.makeText(
                             this,
-                            "Some Error occurred!!!",
+                            "Error in loading Order History. Try again!!!",
                             Toast.LENGTH_SHORT
                         ).show()
                     }) {
                     override fun getHeaders(): MutableMap<String, String> {
                         val headers = HashMap<String, String>()
-                        headers["Content-type"] = "application/json"
-                        headers["token"] = "26c5144c5b9c13"
+                        headers["Content-type"] = Constants.url.json
+                        headers["token"] = Constants.url.key
                         return headers
                     }
                 }
@@ -123,9 +126,12 @@ class OrderHistoryActivity : AppCompatActivity() {
             } catch (e: JSONException) {
                 Toast.makeText(
                     this,
-                    "Some Unexpected error occurred!!!",
+                    "Failed to connect to server!!!",
                     Toast.LENGTH_SHORT
                 ).show()
+            }
+            catch (exception: Exception){
+                exception.stackTrace
             }
 
         } else {

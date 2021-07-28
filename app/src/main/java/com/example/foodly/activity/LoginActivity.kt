@@ -15,7 +15,8 @@ import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.foodly.R
-import com.example.foodly.util.ConnectionManager
+import com.example.foodly.util.ConnectionManager.Companion.checkConnectivity
+import com.example.foodly.util.Constants
 import com.muddzdev.styleabletoast.StyleableToast
 import kotlinx.android.synthetic.main.activity_login.*
 import org.json.JSONObject
@@ -61,14 +62,15 @@ class LoginActivity : AppCompatActivity() {
         loginUser.put("password", etPassword.text)
 
         val queue = Volley.newRequestQueue(this)
-        val url = "http://13.235.250.119/v2/login/fetch_result/"
+        val url = Constants.url.loginURL
 
-        if (ConnectionManager().checkConnectivity(this)) {
+        if (checkConnectivity(this)) {
 
             val sharedPreferences = this.getSharedPreferences(
                 getString(R.string.shared_preferences),
                 Context.MODE_PRIVATE
             )
+            val editor = sharedPreferences.edit()
 
             try {
                 val jsonRequest =
@@ -81,18 +83,13 @@ class LoginActivity : AppCompatActivity() {
 
                             if (success) {
                                 val data = response.getJSONObject("data")
-                                sharedPreferences.edit().putBoolean("isLoggedIn", true).apply()
-                                sharedPreferences.edit()
-                                    .putString("user_id", data.getString("user_id")).apply()
-                                sharedPreferences.edit().putString("name", data.getString("name"))
-                                    .apply()
-                                sharedPreferences.edit().putString("email", data.getString("email"))
-                                    .apply()
-                                sharedPreferences.edit()
-                                    .putString("mobile_number", data.getString("mobile_number"))
-                                    .apply()
-                                sharedPreferences.edit()
-                                    .putString("address", data.getString("address")).apply()
+                                editor.putBoolean("isLoggedIn", true)
+                                editor.putString("user_id", data.getString("user_id"))
+                                editor.putString("name", data.getString("name"))
+                                editor.putString("email", data.getString("email"))
+                                editor.putString("mobile_number", data.getString("mobile_number"))
+                                editor.putString("address", data.getString("address"))
+                                editor.apply()
 
                                 StyleableToast.Builder(this)
                                     .text("Welcome " + data.getString("name"))
@@ -114,8 +111,8 @@ class LoginActivity : AppCompatActivity() {
                         }) {
                         override fun getHeaders(): MutableMap<String, String> {
                             val headers = HashMap<String, String>()
-                            headers["Content-type"] = "application/json"
-                            headers["token"] = "9bf534118365f1"
+                            headers["Content-type"] = Constants.url.json
+                            headers["token"] = Constants.url.key
                             return headers
                         }
                     }

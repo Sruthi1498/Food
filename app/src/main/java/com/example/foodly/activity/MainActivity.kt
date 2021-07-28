@@ -1,6 +1,5 @@
 package com.example.foodly.activity
 
-import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
@@ -24,7 +23,6 @@ class MainActivity : AppCompatActivity() {
     lateinit var txtUser: TextView
     lateinit var txtNumber: TextView
 
-    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -61,7 +59,7 @@ class MainActivity : AppCompatActivity() {
 
                 R.id.favourites -> {
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.frame, FavoriteFragment(this))
+                        .replace(R.id.frame, FavoriteFragment())
                         .commit()
 
                     supportActionBar?.title = "Favorite"
